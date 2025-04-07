@@ -1,8 +1,10 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Edit } from "lucide-react";
+import ColorPicker from "./ColorPicker";
+import { useTopics } from "@/contexts/TopicContext";
 
 interface TopicButtonProps {
   id: string;
@@ -21,30 +23,65 @@ const TopicButton = ({
   size = "md",
   className 
 }: TopicButtonProps) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const { updateTopicColor } = useTopics();
+  
   const sizeClasses = {
     sm: "py-3 px-4",
     md: "py-4 px-6",
     lg: "py-5 px-8"
   };
 
+  const handleColorChange = (newColor: string) => {
+    updateTopicColor(id, newColor);
+  };
+
   return (
-    <Link 
-      to={`/topic/${id}`}
-      className={cn(
-        "rounded-lg transition-all hover:scale-[1.02] hover:shadow-lg flex flex-col justify-center items-center relative group",
-        sizeClasses[size],
-        className
+    <div className="relative group">
+      <Link 
+        to={`/topic/${id}`}
+        className={cn(
+          "rounded-lg transition-all hover:scale-[1.02] hover:shadow-lg flex flex-col justify-center items-center relative",
+          sizeClasses[size],
+          className
+        )}
+        style={{ backgroundColor: color }}
+        onClick={(e) => {
+          if (isEditing) {
+            e.preventDefault();
+          }
+        }}
+      >
+        <h3 className="font-semibold text-center">{title}</h3>
+        {subtitle && (
+          <p className="text-sm mt-0.5 text-center opacity-85">{subtitle}</p>
+        )}
+        <ExternalLink 
+          className="absolute top-2 right-2 w-4 h-4 opacity-0 group-hover:opacity-60 transition-opacity" 
+        />
+      </Link>
+
+      {/* Edit button for color */}
+      <button
+        className="absolute top-2 left-2 p-1 bg-white/80 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+        onClick={() => setIsEditing(!isEditing)}
+      >
+        <Edit size={14} />
+      </button>
+
+      {/* Color picker (appears when editing) */}
+      {isEditing && (
+        <div 
+          className="absolute left-0 -bottom-12 z-10 p-2 bg-white rounded-md shadow-md"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <ColorPicker 
+            color={color} 
+            onChange={handleColorChange}
+          />
+        </div>
       )}
-      style={{ backgroundColor: color }}
-    >
-      <h3 className="font-semibold text-center">{title}</h3>
-      {subtitle && (
-        <p className="text-sm mt-0.5 text-center opacity-85">{subtitle}</p>
-      )}
-      <ExternalLink 
-        className="absolute top-2 right-2 w-4 h-4 opacity-0 group-hover:opacity-60 transition-opacity" 
-      />
-    </Link>
+    </div>
   );
 };
 

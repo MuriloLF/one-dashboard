@@ -5,12 +5,13 @@ import { ChevronLeft } from "lucide-react";
 import PageTitle from "@/components/PageTitle";
 import DashboardSection from "@/components/DashboardSection";
 import DashboardButton from "@/components/DashboardButton";
-import { dashboardTopics, Topic } from "@/data/dashboardData";
+import { useTopics } from "@/contexts/TopicContext";
 
 const TopicPage = () => {
   const { id } = useParams<{ id: string }>();
+  const { topics } = useTopics();
   
-  const topic = dashboardTopics.find(t => t.id === id);
+  const topic = topics.find(t => t.id === id);
   
   if (!topic) {
     return (
