@@ -13,6 +13,7 @@ interface TopicButtonProps {
   color: string;
   size?: "sm" | "md" | "lg";
   className?: string;
+  subtopics?: { name: string }[];
 }
 
 const TopicButton = ({ 
@@ -21,7 +22,8 @@ const TopicButton = ({
   subtitle, 
   color, 
   size = "md",
-  className 
+  className,
+  subtopics = []
 }: TopicButtonProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const { updateTopicColor } = useTopics();
@@ -31,6 +33,9 @@ const TopicButton = ({
     md: "py-4 px-6",
     lg: "py-5 px-8"
   };
+
+  // Get the first 3 subtopics or all if less than 3
+  const previewSubtopics = subtopics.slice(0, 3);
 
   const handleColorChange = (newColor: string) => {
     updateTopicColor(id, newColor);
@@ -56,6 +61,16 @@ const TopicButton = ({
         {subtitle && (
           <p className="text-sm mt-0.5 text-center opacity-85">{subtitle}</p>
         )}
+        
+        {previewSubtopics.length > 0 && (
+          <div className="mt-2 text-sm">
+            <p className="italic text-center opacity-75 text-xs">
+              {previewSubtopics.map(st => st.name).join(", ")}
+              {subtopics.length > 3 ? "..." : ""}
+            </p>
+          </div>
+        )}
+        
         <ExternalLink 
           className="absolute top-2 right-2 w-4 h-4 opacity-0 group-hover:opacity-60 transition-opacity" 
         />

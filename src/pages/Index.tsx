@@ -6,8 +6,27 @@ import DashboardSection from "@/components/DashboardSection";
 import { useTopics } from "@/contexts/TopicContext";
 import ExcelImport from "@/components/ExcelImport";
 
+// Helper function to extract number from string like "1. Topic"
+const extractNumber = (str: string): number => {
+  const match = str.match(/^(\d+)[\.\s]/);
+  return match ? parseInt(match[1], 10) : Number.MAX_SAFE_INTEGER;
+};
+
 const Index = () => {
   const { topics } = useTopics();
+
+  // Sort topics based on numbering system
+  const sortedTopics = [...topics].sort((a, b) => {
+    const numA = extractNumber(a.name);
+    const numB = extractNumber(b.name);
+    
+    if (numA !== numB) {
+      return numA - numB;
+    }
+    
+    // If numbers are the same or not present, sort alphabetically
+    return a.name.localeCompare(b.name);
+  });
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -21,14 +40,15 @@ const Index = () => {
           
           {/* Main Topics Grid */}
           <DashboardSection className="grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {topics.map((topic) => (
+            {sortedTopics.map((topic) => (
               <TopicButton
                 key={topic.id}
                 id={topic.id}
                 title={topic.name}
                 subtitle={topic.subtitle}
                 color={topic.color}
-                className="w-full h-24"
+                className="w-full h-auto min-h-24 py-4"
+                subtopics={topic.subtopics}
               />
             ))}
           </DashboardSection>

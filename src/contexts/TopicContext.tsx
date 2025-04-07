@@ -18,7 +18,11 @@ export const TopicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const savedTopics = localStorage.getItem("dashboardTopics");
     if (savedTopics) {
       try {
-        setTopics(JSON.parse(savedTopics));
+        const parsedTopics = JSON.parse(savedTopics);
+        // Ensure no duplication on first load
+        if (parsedTopics.length > 0) {
+          setTopics(parsedTopics);
+        }
       } catch (e) {
         console.error("Failed to parse saved topics:", e);
       }
@@ -39,7 +43,21 @@ export const TopicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const updateTopics = (newTopics: Topic[]) => {
-    setTopics(newTopics);
+    setTopics((prevTopics) => {
+      // Preserve existing colors when updating topics
+      const updatedTopics = newTopics.map(newTopic => {
+        const existingTopic = prevTopics.find(t => 
+          t.id === newTopic.id || 
+          t.name === newTopic.name
+        );
+        
+        return existingTopic 
+          ? { ...newTopic, color: existingTopic.color } 
+          : newTopic;
+      });
+      
+      return updatedTopics;
+    });
   };
 
   return (

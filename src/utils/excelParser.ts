@@ -9,6 +9,12 @@ interface ExcelRow {
   D: string; // Subtopic
 }
 
+// Helper function to extract number from a string like "1. Something"
+const extractNumber = (str: string): number => {
+  const match = str.match(/^(\d+)[\.\s]/);
+  return match ? parseInt(match[1], 10) : Number.MAX_SAFE_INTEGER;
+};
+
 export const parseExcelFile = async (file: File): Promise<Topic[]> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -63,10 +69,36 @@ export const parseExcelFile = async (file: File): Promise<Topic[]> => {
           const topicId = topicName.toLowerCase().replace(/\s+/g, "-");
           
           const subtopics: Subtopic[] = [];
-          subtopicMap.forEach((buttons, subtopicName) => {
+          
+          // Sort the subtopics by numbering system
+          const sortedSubtopicEntries = Array.from(subtopicMap.entries())
+            .sort(([keyA], [keyB]) => {
+              const numA = extractNumber(keyA);
+              const numB = extractNumber(keyB);
+              
+              if (numA !== numB) {
+                return numA - numB;
+              }
+              
+              return keyA.localeCompare(keyB);
+            });
+          
+          sortedSubtopicEntries.forEach(([subtopicName, buttons]) => {
+            // Sort buttons within each subtopic
+            const sortedButtons = [...buttons].sort((a, b) => {
+              const numA = extractNumber(a.title);
+              const numB = extractNumber(b.title);
+              
+              if (numA !== numB) {
+                return numA - numB;
+              }
+              
+              return a.title.localeCompare(b.title);
+            });
+            
             subtopics.push({
               name: subtopicName,
-              buttons,
+              buttons: sortedButtons,
             });
           });
           
@@ -78,6 +110,13 @@ export const parseExcelFile = async (file: File): Promise<Topic[]> => {
             subtopics,
           });
         });
+        
+        // Save the raw Excel data to localStorage for future reference
+        try {
+          localStorage.setItem("lastExcelImport", JSON.stringify(rows));
+        } catch (e) {
+          console.error("Failed to save Excel data to localStorage:", e);
+        }
         
         resolve(topics);
       } catch (error) {
