@@ -1,9 +1,10 @@
 
 import { Topic, Subtopic, SubtopicButton } from "@/data/dashboardData";
 
+// Using a public Google Sheets URL approach instead of API key
+// This is more reliable for public sheets that don't require authentication
 const SHEET_ID = "109mhmt8MMonS0dF0aKAB0SeY9ETTRzvim5ChhW3Zbak";
 const SHEET_NAME = "Sheet1"; // Update this if your sheet has a different name
-const API_KEY = "AIzaSyBL-BxkMD7iG8_MZBbgFJF3S1X9mFGtUvM"; // This is a read-only API key for Google Sheets
 
 // Helper function to extract number from a string like "1. Something"
 const extractNumber = (str: string): number => {
@@ -17,18 +18,20 @@ interface SheetRow {
 
 export const fetchGoogleSheetsData = async (): Promise<Topic[]> => {
   try {
-    // Fetch the data from Google Sheets API
+    // Using the public CSV export URL which doesn't require an API key
     const response = await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`
+      `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${SHEET_NAME}`
     );
 
     if (!response.ok) {
       throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}`);
     }
 
-    const data = await response.json();
-    const rows = data.values;
-
+    const csvText = await response.text();
+    
+    // Parse CSV data
+    const rows = parseCSV(csvText);
+    
     if (!rows || rows.length <= 1) {
       throw new Error("No data found in the sheet");
     }
@@ -128,3 +131,33 @@ export const fetchGoogleSheetsData = async (): Promise<Topic[]> => {
     throw error;
   }
 };
+
+// Simple CSV parser function
+function parseCSV(text: string): string[][] {
+  const lines = text.split('\n');
+  return lines.map(line => {
+    // Handle quoted values (which may contain commas)
+    const result: string[] = [];
+    let inQuotes = false;
+    let currentValue = '';
+    
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      
+      if (char === '"') {
+        inQuotes = !inQuotes;
+      } else if (char === ',' && !inQuotes) {
+        result.push(currentValue);
+        currentValue = '';
+      } else {
+        currentValue += char;
+      }
+    }
+    
+    // Don't forget the last value
+    result.push(currentValue);
+    
+    // Clean up quotes from values
+    return result.map(value => value.replace(/^"|"$/g, ''));
+  });
+}

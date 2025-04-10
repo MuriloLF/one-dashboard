@@ -23,6 +23,11 @@ export const TopicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     try {
       const sheetsData = await fetchGoogleSheetsData();
       
+      if (sheetsData.length === 0) {
+        toast.error("No data found in Google Sheet");
+        return;
+      }
+      
       // Merge with any existing colors
       const updatedTopics = sheetsData.map(newTopic => {
         const existingTopic = topics.find(t => 
@@ -38,9 +43,10 @@ export const TopicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setTopics(updatedTopics);
       localStorage.setItem("dashboardTopics", JSON.stringify(updatedTopics));
       toast.success("Dashboard data updated from Google Sheets");
+      console.log("Google Sheets data loaded successfully:", updatedTopics);
     } catch (error) {
       console.error("Failed to load data from Google Sheets:", error);
-      toast.error("Failed to load data from Google Sheets");
+      toast.error("Failed to load data from Google Sheets. Using saved data instead.");
       
       // Fall back to localStorage if available
       const savedTopics = localStorage.getItem("dashboardTopics");
