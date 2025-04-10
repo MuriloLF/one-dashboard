@@ -9,15 +9,10 @@ interface LogoProps {
 const Logo = ({ className }: LogoProps) => {
   return (
     <Link to="/" className={`block ${className}`}>
-      <img 
-        src="/lovable-uploads/f7869ef6-476f-4ae8-b554-1d6103581758.png" 
-        alt="Sami Dashboard Logo" 
-        className="h-14 w-auto object-contain"
-        style={{ 
-          filter: "drop-shadow(0px 0px 1px rgba(0,0,0,0.1))",
-          backgroundColor: "transparent"
-        }}
-      />
+      <div className="flex items-center justify-center">
+        <span className="text-2xl font-bold text-red-500">sami</span>
+        <span className="text-xl ml-1 text-gray-600">One Dashboard</span>
+      </div>
     </Link>
   );
 };
