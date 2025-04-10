@@ -10,9 +10,9 @@ const Logo = ({ className }: LogoProps) => {
   return (
     <Link to="/" className={`block ${className}`}>
       <img 
-        src="/lovable-uploads/4a6fa383-15c1-46d4-a7d6-36bf40b81a37.png" 
-        alt="Sami Logo" 
-        className="h-12 w-auto"
+        src="/lovable-uploads/f7869ef6-476f-4ae8-b554-1d6103581758.png" 
+        alt="Sami One Dashboard Logo" 
+        className="h-14 w-auto"
       />
     </Link>
   );

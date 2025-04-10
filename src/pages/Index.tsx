@@ -4,7 +4,8 @@ import PageTitle from "@/components/PageTitle";
 import TopicButton from "@/components/TopicButton";
 import DashboardSection from "@/components/DashboardSection";
 import { useTopics } from "@/contexts/TopicContext";
-import ExcelImport from "@/components/ExcelImport";
+import { Button } from "@/components/ui/button";
+import { RefreshCw } from "lucide-react";
 
 // Helper function to extract number from string like "1. Topic"
 const extractNumber = (str: string): number => {
@@ -13,7 +14,7 @@ const extractNumber = (str: string): number => {
 };
 
 const Index = () => {
-  const { topics } = useTopics();
+  const { topics, refreshData, isLoading } = useTopics();
 
   // Sort topics based on numbering system
   const sortedTopics = [...topics].sort((a, b) => {
@@ -35,7 +36,14 @@ const Index = () => {
         <div className="w-full max-w-6xl mx-auto p-4 md:p-8">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold">Dashboard Topics</h2>
-            <ExcelImport />
+            <Button
+              onClick={refreshData}
+              disabled={isLoading}
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+              {isLoading ? 'Updating...' : 'Refresh Data'}
+            </Button>
           </div>
           
           {/* Main Topics Grid */}

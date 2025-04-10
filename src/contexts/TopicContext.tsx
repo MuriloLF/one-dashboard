@@ -1,19 +1,66 @@
 
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { dashboardTopics, Topic } from "@/data/dashboardData";
+import { fetchGoogleSheetsData } from "@/utils/googleSheetsParser";
+import { toast } from "@/components/ui/sonner";
 
 interface TopicContextType {
   topics: Topic[];
   updateTopicColor: (id: string, color: string) => void;
   updateTopics: (newTopics: Topic[]) => void;
+  isLoading: boolean;
+  refreshData: () => Promise<void>;
 }
 
 const TopicContext = createContext<TopicContextType | undefined>(undefined);
 
 export const TopicProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [topics, setTopics] = useState<Topic[]>(dashboardTopics);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  // Load topics from localStorage on mount
+  const loadDataFromGoogleSheets = async () => {
+    setIsLoading(true);
+    try {
+      const sheetsData = await fetchGoogleSheetsData();
+      
+      // Merge with any existing colors
+      const updatedTopics = sheetsData.map(newTopic => {
+        const existingTopic = topics.find(t => 
+          t.id === newTopic.id || 
+          t.name === newTopic.name
+        );
+        
+        return existingTopic 
+          ? { ...newTopic, color: existingTopic.color } 
+          : newTopic;
+      });
+      
+      setTopics(updatedTopics);
+      localStorage.setItem("dashboardTopics", JSON.stringify(updatedTopics));
+      toast.success("Dashboard data updated from Google Sheets");
+    } catch (error) {
+      console.error("Failed to load data from Google Sheets:", error);
+      toast.error("Failed to load data from Google Sheets");
+      
+      // Fall back to localStorage if available
+      const savedTopics = localStorage.getItem("dashboardTopics");
+      if (savedTopics) {
+        try {
+          const parsedTopics = JSON.parse(savedTopics);
+          if (parsedTopics.length > 0) {
+            setTopics(parsedTopics);
+            toast.info("Using previously saved dashboard data");
+          }
+        } catch (e) {
+          console.error("Failed to parse saved topics:", e);
+        }
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Load topics on mount
   useEffect(() => {
     const savedTopics = localStorage.getItem("dashboardTopics");
     if (savedTopics) {
@@ -27,6 +74,9 @@ export const TopicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         console.error("Failed to parse saved topics:", e);
       }
     }
+    
+    // Fetch from Google Sheets
+    loadDataFromGoogleSheets();
   }, []);
 
   // Save topics to localStorage whenever they change
@@ -60,8 +110,18 @@ export const TopicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     });
   };
 
+  const refreshData = async () => {
+    await loadDataFromGoogleSheets();
+  };
+
   return (
-    <TopicContext.Provider value={{ topics, updateTopicColor, updateTopics }}>
+    <TopicContext.Provider value={{ 
+      topics, 
+      updateTopicColor, 
+      updateTopics, 
+      isLoading,
+      refreshData 
+    }}>
       {children}
     </TopicContext.Provider>
   );
