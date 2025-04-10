@@ -2,7 +2,7 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { dashboardTopics, Topic } from "@/data/dashboardData";
 import { fetchGoogleSheetsData } from "@/utils/googleSheetsParser";
-import { toast } from "@/components/ui/sonner";
+import { toast } from "sonner";
 
 interface TopicContextType {
   topics: Topic[];
