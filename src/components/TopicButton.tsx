@@ -46,7 +46,7 @@ const TopicButton = ({
       <Link 
         to={`/topic/${id}`}
         className={cn(
-          "rounded-lg transition-all hover:scale-[1.02] hover:shadow-lg flex flex-col justify-center items-center relative",
+          "rounded-lg transition-all hover:scale-[1.02] hover:shadow-lg flex flex-col justify-center items-center relative text-gray-700",
           sizeClasses[size],
           className
         )}

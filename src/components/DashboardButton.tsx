@@ -32,7 +32,7 @@ const DashboardButton = ({
       target="_blank" 
       rel="noopener noreferrer"
       className={cn(
-        "rounded-lg transition-all hover:scale-[1.02] hover:shadow-lg flex flex-col justify-center items-center relative group",
+        "rounded-lg transition-all hover:scale-[1.02] hover:shadow-lg flex flex-col justify-center items-center relative group text-gray-700",
         sizeClasses[size],
         className
       )}
