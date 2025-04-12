@@ -2,6 +2,7 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 import { ExternalLink } from "lucide-react";
+import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
 
 interface DashboardButtonProps {
   title: string;
@@ -21,31 +22,43 @@ const DashboardButton = ({
   className 
 }: DashboardButtonProps) => {
   const sizeClasses = {
-    sm: "py-3 px-4",
-    md: "py-4 px-6",
-    lg: "py-5 px-8"
+    sm: "py-2 px-3",  // Made smaller
+    md: "py-3 px-5",  // Made slightly smaller
+    lg: "py-4 px-7"   // Made slightly smaller
   };
 
   return (
-    <a 
-      href={url} 
-      target="_blank" 
-      rel="noopener noreferrer"
-      className={cn(
-        "rounded-lg transition-all hover:scale-[1.02] hover:shadow-lg flex flex-col justify-center items-center relative group text-gray-700",
-        sizeClasses[size],
-        className
-      )}
-      style={{ backgroundColor: color }}
-    >
-      <h3 className="font-semibold text-center">{title}</h3>
+    <HoverCard>
+      <HoverCardTrigger asChild>
+        <a 
+          href={url} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className={cn(
+            "rounded-lg transition-all hover:scale-[1.02] hover:shadow-lg flex flex-col justify-center items-center relative group text-gray-700",
+            sizeClasses[size],
+            className
+          )}
+          style={{ backgroundColor: color }}
+        >
+          <h3 className="font-semibold text-center">{title}</h3>
+          {subtitle && (
+            <p className="text-sm mt-0.5 text-center opacity-85">{subtitle}</p>
+          )}
+          <ExternalLink 
+            className="absolute top-2 right-2 w-4 h-4 opacity-0 group-hover:opacity-60 transition-opacity" 
+          />
+        </a>
+      </HoverCardTrigger>
+      
       {subtitle && (
-        <p className="text-sm mt-0.5 text-center opacity-85">{subtitle}</p>
+        <HoverCardContent className="p-2 bg-white shadow-lg rounded-md border">
+          <div className="text-sm">
+            <p>{subtitle}</p>
+          </div>
+        </HoverCardContent>
       )}
-      <ExternalLink 
-        className="absolute top-2 right-2 w-4 h-4 opacity-0 group-hover:opacity-60 transition-opacity" 
-      />
-    </a>
+    </HoverCard>
   );
 };
 

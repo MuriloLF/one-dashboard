@@ -7,6 +7,7 @@ import DashboardSection from "@/components/DashboardSection";
 import DashboardButton from "@/components/DashboardButton";
 import { useTopics } from "@/contexts/TopicContext";
 import { Button } from "@/components/ui/button";
+import TopicButton from "@/components/TopicButton";
 
 const TopicPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -59,21 +60,22 @@ const TopicPage = () => {
             </div>
           </div>
           
-          {/* Subtopics Sections */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Topic Buttons with Hover Functionality */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {topic.subtopics.map((subtopic, idx) => (
-              <div key={idx} className={subtopic.buttons.length > 2 ? "col-span-1 md:col-span-1" : "col-span-1"}>
-                <h3 className="text-lg font-medium mb-3 text-center">{subtopic.name}</h3> {/* Added text-center class */}
-                <div className="space-y-3">
+              <div key={idx} className="flex flex-col items-center">
+                <h3 className="text-lg font-medium mb-3 text-center">{subtopic.name}</h3>
+                <div className="space-y-2 w-full">
                   {subtopic.buttons.map((button, buttonIdx) => (
-                    <DashboardButton
+                    <TopicButton
                       key={buttonIdx}
+                      id={`${id}-${idx}-${buttonIdx}`}
                       title={button.title}
                       subtitle={button.subtitle}
                       color={topic.color}
-                      url={button.url}
                       size="sm"
-                      className="w-full"
+                      className="w-full py-2 px-3 min-h-16"
+                      subtopics={[]}
                     />
                   ))}
                 </div>
