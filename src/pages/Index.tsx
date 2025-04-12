@@ -55,7 +55,7 @@ const Index = () => {
                 title={topic.name}
                 subtitle={topic.subtitle}
                 color={topic.color}
-                className="w-full h-auto min-h-24 py-4"
+                className="w-full h-auto min-h-20 py-3" // Made smaller (min-h-24 to min-h-20, py-4 to py-3)
                 subtopics={topic.subtopics}
               />
             ))}

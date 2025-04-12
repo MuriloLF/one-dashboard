@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { ExternalLink, Edit } from "lucide-react";
 import ColorPicker from "./ColorPicker";
 import { useTopics } from "@/contexts/TopicContext";
+import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
 
 interface TopicButtonProps {
   id: string;
@@ -34,47 +35,52 @@ const TopicButton = ({
     lg: "py-5 px-8"
   };
 
-  // Get the first 3 subtopics or all if less than 3
-  const previewSubtopics = subtopics.slice(0, 3);
-
   const handleColorChange = (newColor: string) => {
     updateTopicColor(id, newColor);
   };
 
   return (
     <div className="relative group">
-      <Link 
-        to={`/topic/${id}`}
-        className={cn(
-          "rounded-lg transition-all hover:scale-[1.02] hover:shadow-lg flex flex-col justify-center items-center relative text-gray-700",
-          sizeClasses[size],
-          className
-        )}
-        style={{ backgroundColor: color }}
-        onClick={(e) => {
-          if (isEditing) {
-            e.preventDefault();
-          }
-        }}
-      >
-        <h3 className="font-semibold text-center">{title}</h3>
-        {subtitle && (
-          <p className="text-sm mt-0.5 text-center opacity-85">{subtitle}</p>
-        )}
+      <HoverCard>
+        <HoverCardTrigger asChild>
+          <Link 
+            to={`/topic/${id}`}
+            className={cn(
+              "rounded-lg transition-all hover:scale-[1.02] hover:shadow-lg flex flex-col justify-center items-center relative text-gray-700",
+              sizeClasses[size],
+              className
+            )}
+            style={{ backgroundColor: color }}
+            onClick={(e) => {
+              if (isEditing) {
+                e.preventDefault();
+              }
+            }}
+          >
+            <h3 className="font-semibold text-center">{title}</h3>
+            {subtitle && (
+              <p className="text-sm mt-0.5 text-center opacity-85">{subtitle}</p>
+            )}
+            
+            <ExternalLink 
+              className="absolute top-2 right-2 w-4 h-4 opacity-0 group-hover:opacity-60 transition-opacity" 
+            />
+          </Link>
+        </HoverCardTrigger>
         
-        {previewSubtopics.length > 0 && (
-          <div className="mt-2 text-sm">
-            <p className="italic text-center opacity-75 text-xs">
-              {previewSubtopics.map(st => st.name).join(", ")}
-              {subtopics.length > 3 ? "..." : ""}
-            </p>
-          </div>
+        {subtopics.length > 0 && (
+          <HoverCardContent className="p-2 bg-white shadow-lg rounded-md border">
+            <div className="text-sm">
+              <p className="font-medium mb-1">Subtopics:</p>
+              <ul className="list-disc pl-5">
+                {subtopics.map((st, index) => (
+                  <li key={index} className="text-xs">{st.name}</li>
+                ))}
+              </ul>
+            </div>
+          </HoverCardContent>
         )}
-        
-        <ExternalLink 
-          className="absolute top-2 right-2 w-4 h-4 opacity-0 group-hover:opacity-60 transition-opacity" 
-        />
-      </Link>
+      </HoverCard>
 
       {/* Edit button for color */}
       <button
