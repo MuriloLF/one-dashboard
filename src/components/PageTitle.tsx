@@ -9,7 +9,7 @@ const PageTitle = () => {
         <Logo className="mx-auto" />
       </div>
       <p className="text-gray-600">
-        Central de acesso aos dashboards de saúde
+        Central de acesso aos dashboards da Sami
       </p>
     </div>
   );

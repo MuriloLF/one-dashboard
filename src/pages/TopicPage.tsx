@@ -63,7 +63,7 @@ const TopicPage = () => {
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             {topic.subtopics.map((subtopic, idx) => (
               <div key={idx} className={subtopic.buttons.length > 2 ? "col-span-1 md:col-span-1" : "col-span-1"}>
-                <h3 className="text-lg font-medium mb-3 px-1">{subtopic.name}</h3>
+                <h3 className="text-lg font-medium mb-3 text-center">{subtopic.name}</h3> {/* Added text-center class */}
                 <div className="space-y-3">
                   {subtopic.buttons.map((button, buttonIdx) => (
                     <DashboardButton

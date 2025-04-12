@@ -12,7 +12,7 @@ const Logo = ({ className }: LogoProps) => {
       <img 
         src="/lovable-uploads/4a186043-13b9-4389-933d-ed8c26056f19.png" 
         alt="Sami Dashboard Logo" 
-        className="h-14 w-auto object-contain"
+        className="h-28 w-auto object-contain" // Increased from h-14 to h-28 (doubled)
         style={{ 
           backgroundColor: "transparent"
         }}
