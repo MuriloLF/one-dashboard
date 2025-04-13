@@ -3,13 +3,13 @@ import React from "react";
 import { useParams, Link } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
 import PageTitle from "@/components/PageTitle";
-import TopicButton from "@/components/TopicButton";
+import DashboardButton from "@/components/DashboardButton";  // Changed from TopicButton to DashboardButton
 import { useTopics } from "@/contexts/TopicContext";
 import { Button } from "@/components/ui/button";
 
-// Helper function to remove numeric prefix
+// Helper function to remove numeric prefix - fixed to properly handle formats like "0.1. 2024"
 const removeNumericPrefix = (str: string): string => {
-  return str.replace(/^\d+[\.\s]+/, '');
+  return str.replace(/^[\d\.]+\s*/, '');
 };
 
 const TopicPage = () => {
@@ -69,15 +69,14 @@ const TopicPage = () => {
                 <h3 className="text-lg font-medium mb-3 text-center">{removeNumericPrefix(subtopic.name)}</h3>
                 <div className="space-y-2 w-full">
                   {subtopic.buttons.map((button, buttonIdx) => (
-                    <TopicButton
+                    <DashboardButton
                       key={buttonIdx}
-                      id={`${id}-${idx}-${buttonIdx}`}
                       title={button.title}
                       subtitle={button.subtitle}
                       color={topic.color}
+                      url={button.url}
                       size="sm"
                       className="w-full py-2 px-3 min-h-16"
-                      subtopics={[]}
                     />
                   ))}
                 </div>
