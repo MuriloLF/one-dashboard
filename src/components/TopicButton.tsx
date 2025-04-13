@@ -60,7 +60,18 @@ const TopicButton = ({
               sizeClasses[size],
               className
             )}
-            style={{ backgroundColor: color }}
+            style={{ 
+              backgroundColor: color,
+              transition: "background-color 0.2s ease" 
+            }}
+            onMouseOver={(e) => {
+              // Make the background color darker on hover
+              e.currentTarget.style.backgroundColor = `color-mix(in srgb, ${color} 85%, black)`;
+            }}
+            onMouseOut={(e) => {
+              // Restore the original color
+              e.currentTarget.style.backgroundColor = color;
+            }}
             onClick={(e) => {
               if (isEditing) {
                 e.preventDefault();
