@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { dashboardTopics, Topic } from "@/data/dashboardData";
 import { fetchGoogleSheetsData } from "@/utils/googleSheetsParser";
@@ -28,12 +27,24 @@ export const TopicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         return;
       }
       
+      // Create a map of topic colors by name for easy lookup
+      const topicColorMap = new Map<string, string>();
+      topics.forEach(topic => {
+        topicColorMap.set(topic.name.trim().toLowerCase(), topic.color);
+      });
+      
       // Merge with any existing colors
       const updatedTopics = sheetsData.map(newTopic => {
-        const existingTopic = topics.find(t => 
-          t.id === newTopic.id || 
-          t.name === newTopic.name
-        );
+        // Try to find existing topic by name first
+        const existingColor = topicColorMap.get(newTopic.name.trim().toLowerCase());
+        
+        if (existingColor) {
+          // If we found a match by name, use the existing color
+          return { ...newTopic, color: existingColor };
+        }
+        
+        // Otherwise, try to find it by ID
+        const existingTopic = topics.find(t => t.id === newTopic.id);
         
         return existingTopic 
           ? { ...newTopic, color: existingTopic.color } 
@@ -100,12 +111,24 @@ export const TopicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const updateTopics = (newTopics: Topic[]) => {
     setTopics((prevTopics) => {
+      // Create a map of topic colors by name for more efficient lookup
+      const topicColorMap = new Map<string, string>();
+      prevTopics.forEach(topic => {
+        topicColorMap.set(topic.name.trim().toLowerCase(), topic.color);
+      });
+      
       // Preserve existing colors when updating topics
       const updatedTopics = newTopics.map(newTopic => {
-        const existingTopic = prevTopics.find(t => 
-          t.id === newTopic.id || 
-          t.name === newTopic.name
-        );
+        // First check if there's a matching name in the existing topics
+        const existingColor = topicColorMap.get(newTopic.name.trim().toLowerCase());
+        
+        if (existingColor) {
+          // If we found a match by name, use the existing color
+          return { ...newTopic, color: existingColor };
+        }
+        
+        // Otherwise try to match by ID as a fallback
+        const existingTopic = prevTopics.find(t => t.id === newTopic.id);
         
         return existingTopic 
           ? { ...newTopic, color: existingTopic.color } 
