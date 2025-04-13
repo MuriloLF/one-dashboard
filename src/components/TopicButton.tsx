@@ -22,6 +22,11 @@ interface TopicButtonProps {
   subtopics?: SubtopicWithDisplay[];
 }
 
+// Helper function to remove numeric prefix - matching the one used in TopicPage
+const removeNumericPrefix = (str: string): string => {
+  return str.replace(/^[\d\.]+\s*/, '');
+};
+
 const TopicButton = ({ 
   id, 
   title, 
@@ -79,7 +84,7 @@ const TopicButton = ({
               <p className="font-medium mb-1">Subtopics:</p>
               <ul className="list-disc pl-5">
                 {subtopics.map((st, index) => (
-                  <li key={index} className="text-xs">{st.displayName || st.name}</li>
+                  <li key={index} className="text-xs">{removeNumericPrefix(st.name)}</li>
                 ))}
               </ul>
             </div>

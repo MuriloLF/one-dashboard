@@ -15,7 +15,7 @@ const extractNumber = (str: string): number => {
 
 // Helper function to remove numeric prefix
 const removeNumericPrefix = (str: string): string => {
-  return str.replace(/^\d+[\.\s]+/, '');
+  return str.replace(/^[\d\.]+\s*/, '');
 };
 
 const Index = () => {
@@ -61,10 +61,7 @@ const Index = () => {
                 subtitle={topic.subtitle}
                 color={topic.color}
                 className="w-full h-auto min-h-20 py-3"
-                subtopics={topic.subtopics.map(subtopic => ({
-                  ...subtopic,
-                  displayName: removeNumericPrefix(subtopic.name)
-                }))}
+                subtopics={topic.subtopics}
               />
             ))}
           </DashboardSection>
