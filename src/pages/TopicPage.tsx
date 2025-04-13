@@ -3,11 +3,14 @@ import React from "react";
 import { useParams, Link } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
 import PageTitle from "@/components/PageTitle";
-import DashboardSection from "@/components/DashboardSection";
-import DashboardButton from "@/components/DashboardButton";
+import TopicButton from "@/components/TopicButton";
 import { useTopics } from "@/contexts/TopicContext";
 import { Button } from "@/components/ui/button";
-import TopicButton from "@/components/TopicButton";
+
+// Helper function to remove numeric prefix
+const removeNumericPrefix = (str: string): string => {
+  return str.replace(/^\d+[\.\s]+/, '');
+};
 
 const TopicPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -55,16 +58,15 @@ const TopicPage = () => {
               className="py-3 px-6 rounded-lg w-full text-center mb-8"
               style={{ backgroundColor: topic.color }}
             >
-              <h2 className="text-2xl font-bold">{topic.name}</h2>
+              <h2 className="text-2xl font-bold">{removeNumericPrefix(topic.name)}</h2>
               {topic.subtitle && <p className="text-sm">{topic.subtitle}</p>}
             </div>
           </div>
           
-          {/* Topic Buttons with Hover Functionality */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {topic.subtopics.map((subtopic, idx) => (
               <div key={idx} className="flex flex-col items-center">
-                <h3 className="text-lg font-medium mb-3 text-center">{subtopic.name}</h3>
+                <h3 className="text-lg font-medium mb-3 text-center">{removeNumericPrefix(subtopic.name)}</h3>
                 <div className="space-y-2 w-full">
                   {subtopic.buttons.map((button, buttonIdx) => (
                     <TopicButton

@@ -10,9 +10,9 @@ const Logo = ({ className }: LogoProps) => {
   return (
     <Link to="/" className={`block ${className}`}>
       <img 
-        src="/lovable-uploads/4a186043-13b9-4389-933d-ed8c26056f19.png" 
+        src="/lovable-uploads/3befe50c-393f-4a4e-a30a-323116d05e4e.png" 
         alt="Sami Dashboard Logo" 
-        className="h-56 w-auto object-contain" // Increased from h-28 to h-56 (doubled in size)
+        className="h-56 w-auto object-contain"
         style={{ 
           backgroundColor: "transparent"
         }}

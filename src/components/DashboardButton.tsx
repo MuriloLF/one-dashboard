@@ -22,16 +22,29 @@ const DashboardButton = ({
   className 
 }: DashboardButtonProps) => {
   const sizeClasses = {
-    sm: "py-2 px-3",  // Made smaller
-    md: "py-3 px-5",  // Made slightly smaller
-    lg: "py-4 px-7"   // Made slightly smaller
+    sm: "py-2 px-3",
+    md: "py-3 px-5",
+    lg: "py-4 px-7"
+  };
+
+  // Function to ensure URL has proper format
+  const formatUrl = (url: string): string => {
+    if (!url || url === "#") return "#";
+    
+    // Check if the URL already has a protocol
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    
+    // Add https:// as default protocol if needed
+    return `https://${url}`;
   };
 
   return (
     <HoverCard>
       <HoverCardTrigger asChild>
         <a 
-          href={url} 
+          href={formatUrl(url)} 
           target="_blank" 
           rel="noopener noreferrer"
           className={cn(

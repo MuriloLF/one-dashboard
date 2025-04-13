@@ -7,6 +7,11 @@ import ColorPicker from "./ColorPicker";
 import { useTopics } from "@/contexts/TopicContext";
 import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
 
+interface SubtopicWithDisplay {
+  name: string;
+  displayName?: string;
+}
+
 interface TopicButtonProps {
   id: string;
   title: string;
@@ -14,7 +19,7 @@ interface TopicButtonProps {
   color: string;
   size?: "sm" | "md" | "lg";
   className?: string;
-  subtopics?: { name: string }[];
+  subtopics?: SubtopicWithDisplay[];
 }
 
 const TopicButton = ({ 
@@ -74,7 +79,7 @@ const TopicButton = ({
               <p className="font-medium mb-1">Subtopics:</p>
               <ul className="list-disc pl-5">
                 {subtopics.map((st, index) => (
-                  <li key={index} className="text-xs">{st.name}</li>
+                  <li key={index} className="text-xs">{st.displayName || st.name}</li>
                 ))}
               </ul>
             </div>
