@@ -1,3 +1,4 @@
+
 import { Topic, Subtopic, SubtopicButton } from "@/data/dashboardData";
 
 // Using a public Google Sheets URL approach instead of API key
@@ -18,9 +19,20 @@ interface TopicDesign {
   textColor: string;
 }
 
-interface SheetRow {
-  [key: string]: string;
-}
+// Define a color mapping based on the Google Sheet colors
+const colorMapping: Record<string, { bg: string, text: string }> = {
+  "Texto": { bg: "#69f0ae", text: "#000000" }, // Default green
+  "7. Parceiros": { bg: "#ff7373", text: "#000000" }, // Red
+  "1. Panorama Estratégico": { bg: "#64b5f6", text: "#000000" }, // Blue
+  "5. Procedimento": { bg: "#ffab91", text: "#000000" }, // Orange
+  "Lixeira": { bg: "#e0e0e0", text: "#000000" }, // Gray
+  "2. TdS": { bg: "#80deea", text: "#000000" }, // Teal 
+  "3. Sinistro": { bg: "#fff176", text: "#000000" }, // Yellow
+  "0. OKR": { bg: "#ff8a80", text: "#000000" }, // Light Red
+  "4. Porfolio": { bg: "#ce93d8", text: "#000000" }, // Purple
+  "6. Regulação": { bg: "#a5d6a7", text: "#000000" }, // Light Green
+  "8. Externos": { bg: "#90caf9", text: "#000000" } // Light Blue
+};
 
 async function fetchTopicDesigns(): Promise<TopicDesign[]> {
   try {
@@ -34,15 +46,25 @@ async function fetchTopicDesigns(): Promise<TopicDesign[]> {
 
     const text = await response.text();
     // Extract the JSON part from the response
-    const json = JSON.parse(text.substr(47).slice(0, -2));
+    const json = JSON.parse(text.substr(text.indexOf('{'), text.lastIndexOf('}') - text.indexOf('{') + 1));
+    
+    if (!json.table || !json.table.rows) {
+      console.error('Invalid response format from Google Sheets:', json);
+      return [];
+    }
     
     // Parse the rows into our format
-    const designs: TopicDesign[] = json.table.rows.map((row: any) => ({
-      name: row.c[0]?.v || '',
-      description: row.c[1]?.v || '',
-      backgroundColor: '#69f0ae', // Default color if not found
-      textColor: '#000000'  // Default text color
-    }));
+    const designs: TopicDesign[] = json.table.rows.map((row: any) => {
+      const topicName = row.c[0]?.v || '';
+      const colorData = colorMapping[topicName] || colorMapping["Texto"]; // Use default if not found
+      
+      return {
+        name: topicName,
+        description: row.c[1]?.v || '',
+        backgroundColor: colorData.bg,
+        textColor: colorData.text
+      };
+    });
 
     return designs;
   } catch (error) {
@@ -106,7 +128,14 @@ export const fetchGoogleSheetsData = async (): Promise<Topic[]> => {
 
     topicMap.forEach((subtopicMap, topicName) => {
       const topicId = topicName.toLowerCase().replace(/\s+/g, "-");
-      const design = designs.find(d => d.name.toLowerCase() === topicName.toLowerCase());
+      
+      // Find the matching design by exact topic name
+      const design = designs.find(d => d.name === topicName);
+      
+      // Get color information from our color mapping
+      const colorData = design ? 
+                      { backgroundColor: design.backgroundColor, textColor: design.textColor } : 
+                      { backgroundColor: colorMapping["Texto"].bg, textColor: colorMapping["Texto"].text };
       
       const subtopics: Subtopic[] = [];
 
@@ -145,8 +174,8 @@ export const fetchGoogleSheetsData = async (): Promise<Topic[]> => {
       topics.push({
         id: topicId,
         name: topicName,
-        color: design?.backgroundColor || '#69f0ae', // Use design color or default
-        textColor: design?.textColor || '#000000',   // Use design text color or default
+        color: colorData.backgroundColor,
+        textColor: colorData.textColor,
         subtopics,
       });
     });
@@ -159,6 +188,7 @@ export const fetchGoogleSheetsData = async (): Promise<Topic[]> => {
       console.error("Failed to save to localStorage:", e);
     }
 
+    console.log("Processed topics with colors:", topics);
     return topics;
   } catch (error) {
     console.error("Error fetching Google Sheets data:", error);
