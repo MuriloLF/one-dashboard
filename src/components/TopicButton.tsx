@@ -1,10 +1,8 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { ExternalLink, Edit } from "lucide-react";
-import ColorPicker from "./ColorPicker";
-import { useTopics } from "@/contexts/TopicContext";
+import { ExternalLink } from "lucide-react";
 import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
 
 interface SubtopicWithDisplay {
@@ -17,12 +15,12 @@ interface TopicButtonProps {
   title: string;
   subtitle?: string;
   color: string;
+  textColor?: string;
   size?: "sm" | "md" | "lg";
   className?: string;
   subtopics?: SubtopicWithDisplay[];
 }
 
-// Helper function to remove numeric prefix - matching the one used in TopicPage
 const removeNumericPrefix = (str: string): string => {
   return str.replace(/^[\d\.]+\s*/, '');
 };
@@ -32,21 +30,15 @@ const TopicButton = ({
   title, 
   subtitle, 
   color, 
+  textColor = '#000000',
   size = "md",
   className,
   subtopics = []
 }: TopicButtonProps) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const { updateTopicColor } = useTopics();
-  
   const sizeClasses = {
     sm: "py-3 px-4",
     md: "py-4 px-6",
     lg: "py-5 px-8"
-  };
-
-  const handleColorChange = (newColor: string) => {
-    updateTopicColor(id, newColor);
   };
 
   return (
@@ -56,26 +48,20 @@ const TopicButton = ({
           <Link 
             to={`/topic/${id}`}
             className={cn(
-              "rounded-lg transition-all hover:scale-[1.02] hover:shadow-lg flex flex-col justify-center items-center relative text-gray-700",
+              "rounded-lg transition-all hover:scale-[1.02] hover:shadow-lg flex flex-col justify-center items-center relative",
               sizeClasses[size],
               className
             )}
             style={{ 
               backgroundColor: color,
+              color: textColor,
               transition: "background-color 0.2s ease" 
             }}
             onMouseOver={(e) => {
-              // Make the background color darker on hover
               e.currentTarget.style.backgroundColor = `color-mix(in srgb, ${color} 85%, black)`;
             }}
             onMouseOut={(e) => {
-              // Restore the original color
               e.currentTarget.style.backgroundColor = color;
-            }}
-            onClick={(e) => {
-              if (isEditing) {
-                e.preventDefault();
-              }
             }}
           >
             <h3 className="font-semibold text-center">{title}</h3>
@@ -85,6 +71,7 @@ const TopicButton = ({
             
             <ExternalLink 
               className="absolute top-2 right-2 w-4 h-4 opacity-0 group-hover:opacity-60 transition-opacity" 
+              style={{ color: textColor }}
             />
           </Link>
         </HoverCardTrigger>
@@ -102,27 +89,6 @@ const TopicButton = ({
           </HoverCardContent>
         )}
       </HoverCard>
-
-      {/* Edit button for color */}
-      <button
-        className="absolute top-2 left-2 p-1 bg-white/80 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-        onClick={() => setIsEditing(!isEditing)}
-      >
-        <Edit size={14} />
-      </button>
-
-      {/* Color picker (appears when editing) */}
-      {isEditing && (
-        <div 
-          className="absolute left-0 -bottom-12 z-10 p-2 bg-white rounded-md shadow-md"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <ColorPicker 
-            color={color} 
-            onChange={handleColorChange}
-          />
-        </div>
-      )}
     </div>
   );
 };

@@ -15,6 +15,7 @@ export interface Topic {
   name: string;
   subtitle?: string;
   color: string;
+  textColor?: string;
   subtopics: Subtopic[];
 }
 

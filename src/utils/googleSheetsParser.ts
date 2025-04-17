@@ -1,45 +1,77 @@
-
 import { Topic, Subtopic, SubtopicButton } from "@/data/dashboardData";
 
 // Using a public Google Sheets URL approach instead of API key
-// This is more reliable for public sheets that don't require authentication
 const SHEET_ID = "109mhmt8MMonS0dF0aKAB0SeY9ETTRzvim5ChhW3Zbak";
-const SHEET_NAME = "Sheet1"; // Update this if your sheet has a different name
+const DATA_SHEET = "Sheet1";
+const DESIGN_SHEET = "Dados Topicos";
 
-// Helper function to extract number from a string like "1. Something"
+// Helper function to extract number from a string
 const extractNumber = (str: string): number => {
   const match = str.match(/^(\d+)[\.\s]/);
   return match ? parseInt(match[1], 10) : Number.MAX_SAFE_INTEGER;
 };
 
+interface TopicDesign {
+  name: string;
+  description: string;
+  backgroundColor: string;
+  textColor: string;
+}
+
 interface SheetRow {
   [key: string]: string;
 }
 
-export const fetchGoogleSheetsData = async (): Promise<Topic[]> => {
+async function fetchTopicDesigns(): Promise<TopicDesign[]> {
   try {
-    // Using the public CSV export URL which doesn't require an API key
     const response = await fetch(
-      `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${SHEET_NAME}`
+      `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${DESIGN_SHEET}&headers=1`
     );
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}`);
+      throw new Error('Failed to fetch topic designs');
     }
 
-    const csvText = await response.text();
+    const text = await response.text();
+    // Extract the JSON part from the response
+    const json = JSON.parse(text.substr(47).slice(0, -2));
     
-    // Parse CSV data
+    // Parse the rows into our format
+    const designs: TopicDesign[] = json.table.rows.map((row: any) => ({
+      name: row.c[0]?.v || '',
+      description: row.c[1]?.v || '',
+      backgroundColor: '#69f0ae', // Default color if not found
+      textColor: '#000000'  // Default text color
+    }));
+
+    return designs;
+  } catch (error) {
+    console.error('Error fetching topic designs:', error);
+    return [];
+  }
+}
+
+export const fetchGoogleSheetsData = async (): Promise<Topic[]> => {
+  try {
+    // Fetch both data and designs
+    const [dataResponse, designs] = await Promise.all([
+      fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${DATA_SHEET}`),
+      fetchTopicDesigns()
+    ]);
+
+    if (!dataResponse.ok) {
+      throw new Error(`Failed to fetch data: ${dataResponse.status}`);
+    }
+
+    const csvText = await dataResponse.text();
     const rows = parseCSV(csvText);
     
     if (!rows || rows.length <= 1) {
       throw new Error("No data found in the sheet");
     }
 
-    // Skip the header row
+    // Skip header row and process data
     const dataRows = rows.slice(1);
-
-    // Group by topics
     const topicMap = new Map<string, Map<string, SubtopicButton[]>>();
 
     dataRows.forEach((row: string[]) => {
@@ -69,12 +101,13 @@ export const fetchGoogleSheetsData = async (): Promise<Topic[]> => {
       });
     });
 
-    // Convert maps to topic array
+    // Convert maps to topic array with design information
     const topics: Topic[] = [];
 
     topicMap.forEach((subtopicMap, topicName) => {
       const topicId = topicName.toLowerCase().replace(/\s+/g, "-");
-
+      const design = designs.find(d => d.name.toLowerCase() === topicName.toLowerCase());
+      
       const subtopics: Subtopic[] = [];
 
       // Sort the subtopics by numbering system
@@ -112,17 +145,18 @@ export const fetchGoogleSheetsData = async (): Promise<Topic[]> => {
       topics.push({
         id: topicId,
         name: topicName,
-        // Preserve existing colors if possible
-        color: "#69f0ae", // Default color
+        color: design?.backgroundColor || '#69f0ae', // Use design color or default
+        textColor: design?.textColor || '#000000',   // Use design text color or default
         subtopics,
       });
     });
 
-    // Save the fetched data to localStorage for future reference
+    // Save to localStorage
     try {
       localStorage.setItem("lastGoogleSheetsImport", JSON.stringify(rows));
+      localStorage.setItem("topicDesigns", JSON.stringify(designs));
     } catch (e) {
-      console.error("Failed to save Google Sheets data to localStorage:", e);
+      console.error("Failed to save to localStorage:", e);
     }
 
     return topics;

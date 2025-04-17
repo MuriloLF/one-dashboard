@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useParams, Link } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
@@ -56,7 +55,10 @@ const TopicPage = () => {
             
             <div 
               className="py-3 px-6 rounded-lg w-full text-center mb-8"
-              style={{ backgroundColor: topic.color }}
+              style={{ 
+                backgroundColor: topic.color,
+                color: topic.textColor
+              }}
             >
               <h2 className="text-2xl font-bold">{removeNumericPrefix(topic.name)}</h2>
               {topic.subtitle && <p className="text-sm">{topic.subtitle}</p>}
@@ -66,7 +68,9 @@ const TopicPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {topic.subtopics.map((subtopic, idx) => (
               <div key={idx} className="flex flex-col items-center">
-                <h3 className="text-lg font-medium mb-3 text-center">{removeNumericPrefix(subtopic.name)}</h3>
+                <h3 className="text-lg font-medium mb-3 text-center">
+                  {removeNumericPrefix(subtopic.name)}
+                </h3>
                 <div className="space-y-2 w-full">
                   {subtopic.buttons.map((button, buttonIdx) => (
                     <DashboardButton
@@ -74,6 +78,7 @@ const TopicPage = () => {
                       title={button.title}
                       subtitle={button.subtitle}
                       color={topic.color}
+                      textColor={topic.textColor}
                       url={button.url}
                       size="sm"
                       className="w-full py-2 px-3 min-h-16"
