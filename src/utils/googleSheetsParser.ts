@@ -1,4 +1,3 @@
-
 import { Topic, Subtopic, SubtopicButton } from "@/data/dashboardData";
 
 // Using a public Google Sheets URL approach instead of API key
@@ -19,7 +18,7 @@ interface TopicDesign {
   textColor: string;
 }
 
-// Define a color mapping based on the Google Sheet colors
+// Define a color mapping based on the Google Sheet colors with correct text colors
 const colorMapping: Record<string, { bg: string, text: string }> = {
   "Texto": { bg: "#69f0ae", text: "#000000" }, // Default green
   "7. Parceiros": { bg: "#ff7373", text: "#000000" }, // Red
@@ -31,7 +30,7 @@ const colorMapping: Record<string, { bg: string, text: string }> = {
   "0. OKR": { bg: "#ff8a80", text: "#000000" }, // Light Red
   "4. Porfolio": { bg: "#ce93d8", text: "#000000" }, // Purple
   "6. Regulação": { bg: "#a5d6a7", text: "#000000" }, // Light Green
-  "8. Externos": { bg: "#90caf9", text: "#000000" } // Light Blue
+  "8. Externos": { bg: "#90caf9", text: "#FFFFFF" } // Light Blue with white text
 };
 
 async function fetchTopicDesigns(): Promise<TopicDesign[]> {
@@ -53,19 +52,35 @@ async function fetchTopicDesigns(): Promise<TopicDesign[]> {
       return [];
     }
     
-    // Parse the rows into our format
+    // Parse the rows into our format with correct text colors
     const designs: TopicDesign[] = json.table.rows.map((row: any) => {
       const topicName = row.c[0]?.v || '';
-      const colorData = colorMapping[topicName] || colorMapping["Texto"]; // Use default if not found
+      
+      // Get the text color from Column C if available, otherwise fall back to our mapping
+      let textColor = '#000000'; // Default black text
+      
+      // If row.c[2]?.f exists and contains a style attribute with color
+      if (row.c[2]?.f) {
+        const styleMatch = row.c[2].f.match(/color:(#[0-9A-Fa-f]{6}|white|black)/);
+        if (styleMatch && styleMatch[1]) {
+          textColor = styleMatch[1] === 'white' ? '#FFFFFF' : 
+                      styleMatch[1] === 'black' ? '#000000' : 
+                      styleMatch[1];
+        }
+      }
+      
+      // Get background color from our mapping
+      const colorData = colorMapping[topicName] || colorMapping["Texto"];
       
       return {
         name: topicName,
         description: row.c[1]?.v || '',
         backgroundColor: colorData.bg,
-        textColor: colorData.text
+        textColor: textColor
       };
     });
 
+    console.log("Extracted topic designs with text colors:", designs);
     return designs;
   } catch (error) {
     console.error('Error fetching topic designs:', error);
@@ -132,7 +147,7 @@ export const fetchGoogleSheetsData = async (): Promise<Topic[]> => {
       // Find the matching design by exact topic name
       const design = designs.find(d => d.name === topicName);
       
-      // Get color information from our color mapping
+      // Get color information from our color mapping or the design
       const colorData = design ? 
                       { backgroundColor: design.backgroundColor, textColor: design.textColor } : 
                       { backgroundColor: colorMapping["Texto"].bg, textColor: colorMapping["Texto"].text };
