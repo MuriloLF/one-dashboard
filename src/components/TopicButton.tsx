@@ -14,6 +14,7 @@ interface TopicButtonProps {
   id: string;
   title: string;
   subtitle?: string;
+  description?: string;
   color: string;
   textColor?: string;
   size?: "sm" | "md" | "lg";
@@ -28,7 +29,8 @@ const removeNumericPrefix = (str: string): string => {
 const TopicButton = ({ 
   id, 
   title, 
-  subtitle, 
+  subtitle,
+  description,
   color, 
   textColor = '#000000',
   size = "md",
@@ -76,8 +78,18 @@ const TopicButton = ({
           </Link>
         </HoverCardTrigger>
         
-        {subtopics.length > 0 && (
-          <HoverCardContent className="p-2 bg-white shadow-lg rounded-md border">
+        <HoverCardContent 
+          className="p-4 bg-white shadow-lg rounded-md border w-80 space-y-4"
+          style={{ color: '#000000' }}
+        >
+          {description && (
+            <div className="text-sm">
+              <p className="font-medium mb-2">About this topic:</p>
+              <p>{description}</p>
+            </div>
+          )}
+          
+          {subtopics.length > 0 && (
             <div className="text-sm">
               <p className="font-medium mb-1">Subtopics:</p>
               <ul className="list-disc pl-5">
@@ -86,8 +98,8 @@ const TopicButton = ({
                 ))}
               </ul>
             </div>
-          </HoverCardContent>
-        )}
+          )}
+        </HoverCardContent>
       </HoverCard>
     </div>
   );

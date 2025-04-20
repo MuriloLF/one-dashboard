@@ -70,7 +70,10 @@ const DashboardButton = ({
       </HoverCardTrigger>
       
       {subtitle && (
-        <HoverCardContent className="p-2 bg-white shadow-lg rounded-md border">
+        <HoverCardContent 
+          className="p-2 bg-white shadow-lg rounded-md border"
+          style={{ color: '#000000' }}
+        >
           <div className="text-sm">
             <p>{subtitle}</p>
           </div>

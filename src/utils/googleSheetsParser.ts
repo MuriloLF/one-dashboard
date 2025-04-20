@@ -18,21 +18,6 @@ interface TopicDesign {
   textColor: string;
 }
 
-// Define a color mapping based on the Google Sheet colors with correct text colors
-const colorMapping: Record<string, { bg: string, text: string }> = {
-  "Texto": { bg: "#69f0ae", text: "#000000" }, // Default green
-  "7. Parceiros": { bg: "#ff7373", text: "#000000" }, // Red
-  "1. Panorama Estratégico": { bg: "#64b5f6", text: "#000000" }, // Blue
-  "5. Procedimento": { bg: "#ffab91", text: "#000000" }, // Orange
-  "Lixeira": { bg: "#e0e0e0", text: "#000000" }, // Gray
-  "2. TdS": { bg: "#80deea", text: "#000000" }, // Teal 
-  "3. Sinistro": { bg: "#fff176", text: "#000000" }, // Yellow
-  "0. OKR": { bg: "#ff8a80", text: "#000000" }, // Light Red
-  "4. Porfolio": { bg: "#ce93d8", text: "#000000" }, // Purple
-  "6. Regulação": { bg: "#a5d6a7", text: "#000000" }, // Light Green
-  "8. Externos": { bg: "#90caf9", text: "#FFFFFF" } // Light Blue with white text
-};
-
 async function fetchTopicDesigns(): Promise<TopicDesign[]> {
   try {
     const response = await fetch(
@@ -44,7 +29,6 @@ async function fetchTopicDesigns(): Promise<TopicDesign[]> {
     }
 
     const text = await response.text();
-    // Extract the JSON part from the response
     const json = JSON.parse(text.substr(text.indexOf('{'), text.lastIndexOf('}') - text.indexOf('{') + 1));
     
     if (!json.table || !json.table.rows) {
@@ -52,40 +36,71 @@ async function fetchTopicDesigns(): Promise<TopicDesign[]> {
       return [];
     }
     
-    // Parse the rows into our format with correct text colors
+    // Parse the rows into our format with correct colors and descriptions
     const designs: TopicDesign[] = json.table.rows.map((row: any) => {
       const topicName = row.c[0]?.v || '';
+      const description = row.c[1]?.v || '';
       
-      // Get the text color from Column C if available, otherwise fall back to our mapping
-      let textColor = '#000000'; // Default black text
-      
-      // If row.c[2]?.f exists and contains a style attribute with color
+      // Extract cell background color from HTML style
+      let backgroundColor = '#69f0ae'; // Default green
       if (row.c[2]?.f) {
-        const styleMatch = row.c[2].f.match(/color:(#[0-9A-Fa-f]{6}|white|black)/);
-        if (styleMatch && styleMatch[1]) {
-          textColor = styleMatch[1] === 'white' ? '#FFFFFF' : 
-                      styleMatch[1] === 'black' ? '#000000' : 
-                      styleMatch[1];
+        const bgMatch = row.c[2].f.match(/background-color:\s*(#[0-9A-Fa-f]{6})/i);
+        if (bgMatch && bgMatch[1]) {
+          backgroundColor = bgMatch[1];
         }
       }
       
-      // Get background color from our mapping
-      const colorData = colorMapping[topicName] || colorMapping["Texto"];
+      // Extract text color based on "Preto" or "Branco" value
+      let textColor = '#000000'; // Default black
+      const cellValue = row.c[2]?.v?.toLowerCase() || '';
+      if (cellValue.includes('branco')) {
+        textColor = '#FFFFFF';
+      }
       
       return {
         name: topicName,
-        description: row.c[1]?.v || '',
-        backgroundColor: colorData.bg,
-        textColor: textColor
+        description,
+        backgroundColor,
+        textColor
       };
     });
 
-    console.log("Extracted topic designs with text colors:", designs);
+    console.log("Extracted topic designs:", designs);
     return designs;
   } catch (error) {
     console.error('Error fetching topic designs:', error);
     return [];
   }
+}
+
+// Simple CSV parser function
+function parseCSV(text: string): string[][] {
+  const lines = text.split('\n');
+  return lines.map(line => {
+    // Handle quoted values (which may contain commas)
+    const result: string[] = [];
+    let inQuotes = false;
+    let currentValue = '';
+    
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      
+      if (char === '"') {
+        inQuotes = !inQuotes;
+      } else if (char === ',' && !inQuotes) {
+        result.push(currentValue);
+        currentValue = '';
+      } else {
+        currentValue += char;
+      }
+    }
+    
+    // Don't forget the last value
+    result.push(currentValue);
+    
+    // Clean up quotes from values
+    return result.map(value => value.replace(/^"|"$/g, ''));
+  });
 }
 
 export const fetchGoogleSheetsData = async (): Promise<Topic[]> => {
@@ -147,11 +162,17 @@ export const fetchGoogleSheetsData = async (): Promise<Topic[]> => {
       // Find the matching design by exact topic name
       const design = designs.find(d => d.name === topicName);
       
-      // Get color information from our color mapping or the design
+      // Get color information and description from the design
       const colorData = design ? 
-                      { backgroundColor: design.backgroundColor, textColor: design.textColor } : 
-                      { backgroundColor: colorMapping["Texto"].bg, textColor: colorMapping["Texto"].text };
-      
+        { 
+          backgroundColor: design.backgroundColor, 
+          textColor: design.textColor 
+        } : 
+        { 
+          backgroundColor: '#69f0ae', 
+          textColor: '#000000' 
+        };
+
       const subtopics: Subtopic[] = [];
 
       // Sort the subtopics by numbering system
@@ -191,6 +212,7 @@ export const fetchGoogleSheetsData = async (): Promise<Topic[]> => {
         name: topicName,
         color: colorData.backgroundColor,
         textColor: colorData.textColor,
+        description: design?.description || '',
         subtopics,
       });
     });
@@ -210,33 +232,3 @@ export const fetchGoogleSheetsData = async (): Promise<Topic[]> => {
     throw error;
   }
 };
-
-// Simple CSV parser function
-function parseCSV(text: string): string[][] {
-  const lines = text.split('\n');
-  return lines.map(line => {
-    // Handle quoted values (which may contain commas)
-    const result: string[] = [];
-    let inQuotes = false;
-    let currentValue = '';
-    
-    for (let i = 0; i < line.length; i++) {
-      const char = line[i];
-      
-      if (char === '"') {
-        inQuotes = !inQuotes;
-      } else if (char === ',' && !inQuotes) {
-        result.push(currentValue);
-        currentValue = '';
-      } else {
-        currentValue += char;
-      }
-    }
-    
-    // Don't forget the last value
-    result.push(currentValue);
-    
-    // Clean up quotes from values
-    return result.map(value => value.replace(/^"|"$/g, ''));
-  });
-}
