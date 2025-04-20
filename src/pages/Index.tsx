@@ -59,7 +59,9 @@ const Index = () => {
                 id={topic.id}
                 title={removeNumericPrefix(topic.name)}
                 subtitle={topic.subtitle}
+                description={topic.description}
                 color={topic.color}
+                textColor={topic.textColor}
                 className="w-full h-auto min-h-20 py-3"
                 subtopics={topic.subtopics}
               />

@@ -16,6 +16,7 @@ export interface Topic {
   subtitle?: string;
   color: string;
   textColor?: string;
+  description?: string; // Added this field to support topic descriptions
   subtopics: Subtopic[];
 }
 
