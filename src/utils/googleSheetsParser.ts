@@ -1,3 +1,4 @@
+
 import { Topic, Subtopic, SubtopicButton } from "@/data/dashboardData";
 
 // Using a public Google Sheets URL approach instead of API key
@@ -41,21 +42,34 @@ async function fetchTopicDesigns(): Promise<TopicDesign[]> {
       const topicName = row.c[0]?.v || '';
       const description = row.c[1]?.v || '';
       
-      // Extract cell background color from HTML style
+      // Default values
       let backgroundColor = '#69f0ae'; // Default green
-      if (row.c[2]?.f) {
-        const bgMatch = row.c[2].f.match(/background-color:\s*(#[0-9A-Fa-f]{6})/i);
-        if (bgMatch && bgMatch[1]) {
-          backgroundColor = bgMatch[1];
+      let textColor = '#000000'; // Default black
+      
+      // Extract the background color directly from cell formatting properties
+      if (row.c[2]) {
+        // Try to get the background color from the cell style property
+        const cellStyle = row.c[2].s || {};
+        
+        if (cellStyle && cellStyle.hasOwnProperty('bgc')) {
+          // Direct background color property from the cell style
+          backgroundColor = cellStyle.bgc || backgroundColor;
+        } else if (row.c[2]?.f) {
+          // Fallback: try to extract from HTML formatting
+          const bgMatch = row.c[2].f.match(/background-color:\s*(#[0-9A-Fa-f]{6}|rgb\([^)]+\)|rgba\([^)]+\))/i);
+          if (bgMatch && bgMatch[1]) {
+            backgroundColor = bgMatch[1];
+          }
+        }
+        
+        // Determine text color based on cell value
+        const cellValue = row.c[2]?.v?.toLowerCase() || '';
+        if (cellValue.includes('branco')) {
+          textColor = '#FFFFFF';
         }
       }
       
-      // Extract text color based on "Preto" or "Branco" value
-      let textColor = '#000000'; // Default black
-      const cellValue = row.c[2]?.v?.toLowerCase() || '';
-      if (cellValue.includes('branco')) {
-        textColor = '#FFFFFF';
-      }
+      console.log(`Topic "${topicName}": bg=${backgroundColor}, text=${textColor}`);
       
       return {
         name: topicName,
@@ -162,7 +176,7 @@ export const fetchGoogleSheetsData = async (): Promise<Topic[]> => {
       // Find the matching design by exact topic name
       const design = designs.find(d => d.name === topicName);
       
-      // Get color information and description from the design
+      // Use exact background and text colors from the design sheet
       const colorData = design ? 
         { 
           backgroundColor: design.backgroundColor, 
